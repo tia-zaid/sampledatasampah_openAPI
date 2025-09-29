@@ -1,0 +1,38 @@
+[
+    {
+        "id": 1,
+        "nama": "Pantai Nongsa",
+        "lat": 1.1823,
+        "long": 104.0933,
+        "status": "Penuh",
+        "keterangan": "Banyak sampah plastik dan sisa makanan terdampar.",
+        "terakhir_update": "2025-09-29 14:30:00"
+    },
+    {
+        "id": 2,
+        "nama": "Area Jembatan Barelang",
+        "lat": 1.0339,
+        "long": 104.0118,
+        "status": "Sedang",
+        "keterangan": "Terdapat tumpukan sampah di beberapa titik penyangga jembatan.",
+        "terakhir_update": "2025-09-29 11:00:00"
+    },
+    {
+        "id": 3,
+        "nama": "Pesisir Ocarina Batam",
+        "lat": 1.1444,
+        "long": 104.0402,
+        "status": "Bersih",
+        "keterangan": "Kondisi relatif bersih setelah pembersihan rutin.",
+        "terakhir_update": "2025-09-29 09:15:00"
+    },
+    {
+        "id": 4,
+        "nama": "Pantai Melayu",
+        "lat": 1.0963,
+        "long": 104.1311,
+        "status": "Sedang",
+        "keterangan": "Ada beberapa sampah botol minum di sepanjang garis pantai.",
+        "terakhir_update": "2025-09-29 15:00:00"
+    }
+]
