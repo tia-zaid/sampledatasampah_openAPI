@@ -1,29 +1,311 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="id">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Monitoring Sampah Pesisir Batam</title>
-    
-    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
-     integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY="
-     crossorigin=""/>
-     
-    <link rel="stylesheet" href="style.css">
+  <meta charset="utf-8" />
+  <title>Monitor Sampah Pesisir — Batam (Prototype)</title>
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <!-- Leaflet CSS -->
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+    integrity="sha256-sA+4b0p3b8QkGqv5wK6w0dQm4bI5kYt8kG6Yv9a6w8M=" crossorigin=""/>
+  <style>
+    /* Minimal aesthetic */
+    :root{
+      --accent:#0b83d6;
+      --bg:#f6f9fc;
+      --card:#ffffff;
+      --muted:#666;
+    }
+    html,body,#map { height:100%; margin:0; padding:0; }
+    body{ font-family: Inter, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial; background:var(--bg); color:#111; }
+    .app {
+      position: absolute; z-index:400; top:12px; left:12px; width:360px;
+      background:var(--card); border-radius:12px; box-shadow: 0 6px 20px rgba(20,30,40,0.12);
+      padding:12px; max-height:90vh; overflow:auto;
+      font-size:14px;
+    }
+    .app h2{ margin:4px 0 10px 0; font-size:16px; }
+    .row{ display:flex; gap:8px; align-items:center; margin-bottom:8px; }
+    label{ font-size:12px; color:var(--muted); }
+    input[type=text], select{ width:100%; padding:8px; border-radius:8px; border:1px solid #e5e9ef; }
+    button{ background:var(--accent); color:#fff; border:0; padding:8px 10px; border-radius:8px; cursor:pointer; }
+    button.secondary{ background:#e9eef6; color:var(--accent); }
+    .small{ font-size:12px; color:var(--muted); }
+    .legend{ position:absolute; right:12px; top:12px; z-index:450; background:#fff; padding:8px;border-radius:8px; box-shadow:0 4px 12px rgba(0,0,0,0.08); }
+    .badge{ display:inline-block; padding:4px 8px;border-radius:999px; font-size:12px; background:#f2f6fb; color:var(--accent); margin-right:6px; }
+    footer{ font-size:12px; color:var(--muted); margin-top:8px; }
+    .list-item{ padding:6px;border-radius:8px;border:1px dashed #eef3fb;margin-bottom:6px; }
+  </style>
 </head>
 <body>
-    <header>
-        <h1>🌊 Sistem Monitoring Sampah Pesisir - Batam</h1>
-    </header>
-    
-    <main>
-        <div id="map"></div>
-    </main>
-    
-    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
-     integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo="
-     crossorigin=""></script>
-     
-    <script src="script.js"></script>
+  <div id="map"></div>
+
+  <div class="app" id="controls">
+    <h2>Monitor Sampah Pesisir — Batam</h2>
+
+    <div class="row">
+      <label for="dataUrl">URL file CSV / GeoJSON publik (paste)</label>
+    </div>
+    <div class="row">
+      <input id="dataUrl" type="text" placeholder="https://raw.githubusercontent.com/.../data.csv" />
+      <button id="btnFetch">Fetch</button>
+    </div>
+    <div class="row">
+      <button id="btnLoadSample" class="secondary">Load contoh data</button>
+      <button id="btnExport">Export GeoJSON</button>
+    </div>
+
+    <div class="row">
+      <label for="filterType">Filter jenis</label>
+    </div>
+    <div class="row">
+      <select id="filterType">
+        <option value="all">Semua</option>
+        <option value="plastic">Plastic</option>
+        <option value="rope">Rope/Lines</option>
+        <option value="metal">Metal</option>
+        <option value="other">Other</option>
+      </select>
+      <select id="filterDays">
+        <option value="365">1 Tahun</option>
+        <option value="30">30 Hari</option>
+        <option value="7">7 Hari</option>
+        <option value="1">1 Hari</option>
+      </select>
+    </div>
+
+    <div class="row">
+      <button id="btnApply">Apply filter</button>
+      <button id="btnClear">Clear markers</button>
+    </div>
+
+    <hr />
+
+    <div>
+      <div class="small">Petunjuk cepat:</div>
+      <ol style="padding-left:18px">
+        <li>Paste URL CSV/GeoJSON publik (contoh: hasil export Debris Tracker CSV yang diubah ke raw github), lalu klik Fetch.</li>
+        <li>Klik marker untuk detail. Gunakan tombol "Fetch Marine Forecast" pada popup untuk kondisi gelombang/wind di titik itu (menggunakan Open-Meteo).</li>
+        <li>Export GeoJSON untuk integrasi ke dashboard lain.</li>
+      </ol>
+    </div>
+
+    <footer>
+      Prototype — data citizen science (Debris Tracker / Plastic Patrol / MLW) cocok digabung. Lihat sumber di dokumentasi. 
+    </footer>
+  </div>
+
+  <div class="legend" id="legend">
+    <div><span class="badge">Batam</span> Pusat pemantauan</div>
+    <div style="margin-top:8px;">
+      <strong>Markers:</strong>
+      <div><span style="color:#0b83d6">●</span> Plastic / umum</div>
+      <div><span style="color:#d65a0b">●</span> Rope/line</div>
+      <div><span style="color:#5aa25a">●</span> Metal/large</div>
+    </div>
+  </div>
+
+  <!-- Leaflet JS -->
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
+    integrity="sha256-o9N1j7gPgnb0Bf/3gd8q4kQ4Wm0vQ5u6V+3t9g9f5wM=" crossorigin=""></script>
+  <!-- PapaParse for CSV parsing -->
+  <script src="https://cdn.jsdelivr.net/npm/papaparse@5.4.1/papaparse.min.js"></script>
+
+  <script>
+  // ====== CONFIG ======
+  const BATAM_CENTER = { lat: 1.054507, lng: 104.004120 }; // sumber: various coords for Batam center. See docs.
+  const map = L.map('map').setView([BATAM_CENTER.lat, BATAM_CENTER.lng], 11);
+  L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+    attribution: '© OpenStreetMap contributors'
+  }).addTo(map);
+
+  // layer groups
+  const debrisLayer = L.layerGroup().addTo(map);
+
+  // helper: marker style by material
+  function iconForType(type){
+    const base = { radius:8, fillOpacity:0.9, color:'#fff', weight:1 };
+    if(!type) type='plastic';
+    if(type.includes('plastic')) return L.circleMarker([0,0], {...base, fillColor:'#0b83d6'});
+    if(type.includes('rope') || type.includes('line')) return L.circleMarker([0,0], {...base, fillColor:'#d65a0b'});
+    if(type.includes('metal')) return L.circleMarker([0,0], {...base, fillColor:'#5aa25a'});
+    return L.circleMarker([0,0], {...base, fillColor:'#999'});
+  }
+
+  // sample in-memory data (GeoJSON-like)
+  const sampleData = [
+    { id:1, lat:1.160, lon:104.060, type:'plastic', qty:12, when:'2025-07-10', note:'plastik botol & kantong' },
+    { id:2, lat:1.020, lon:104.030, type:'rope', qty:2, when:'2025-07-08', note:'jaring nelayan terlilit' },
+    { id:3, lat:1.070, lon:103.990, type:'metal', qty:1, when:'2025-06-30', note:'kaleng besar' }
+  ];
+
+  // store markers for export/filter
+  let storedFeatures = [];
+
+  function addDebrisPoint(pt){
+    const marker = iconForType(pt.type).setLatLng([pt.lat, pt.lon]);
+    marker.bindTooltip(`${pt.type} — ${pt.qty} item(s) — ${pt.when}`, {permanent:false});
+    const popupHtml = `
+      <div class="list-item">
+        <strong>${pt.type.toUpperCase()}</strong><br/>
+        Qty: ${pt.qty}<br/>
+        Date: ${pt.when}<br/>
+        Note: ${pt.note || '-'}<br/>
+        <div style="margin-top:6px;">
+          <button onclick="fetchMarineForecast(${pt.lat}, ${pt.lon})">Fetch Marine Forecast</button>
+        </div>
+      </div>
+    `;
+    marker.bindPopup(popupHtml);
+    marker.addTo(debrisLayer);
+    storedFeatures.push(pt);
+  }
+
+  // load sample
+  document.getElementById('btnLoadSample').addEventListener('click', ()=> {
+    clearMarkers();
+    storedFeatures = [];
+    sampleData.forEach(addDebrisPoint);
+    map.fitBounds(debrisLayer.getBounds(), { maxZoom:13 });
+  });
+
+  // clear
+  function clearMarkers(){
+    debrisLayer.clearLayers();
+    storedFeatures = [];
+  }
+  document.getElementById('btnClear').addEventListener('click', clearMarkers);
+
+  // fetch user-supplied CSV/GeoJSON URL
+  document.getElementById('btnFetch').addEventListener('click', async ()=>{
+    const url = document.getElementById('dataUrl').value.trim();
+    if(!url) { alert('Masukkan URL publik CSV atau GeoJSON terlebih dahulu'); return; }
+    try{
+      // quick sniff: if endsWith .geojson or content-type contains geojson
+      const resp = await fetch(url);
+      if(!resp.ok) throw new Error('fetch error: ' + resp.status);
+      const ct = resp.headers.get('content-type') || '';
+      if(ct.includes('json') || url.toLowerCase().endsWith('.geojson')){
+        const geo = await resp.json();
+        parseGeoJSON(geo);
+      } else {
+        const text = await resp.text();
+        // try parse CSV via PapaParse
+        const parsed = Papa.parse(text, { header:true, skipEmptyLines:true });
+        parseCSVRows(parsed.data);
+      }
+    } catch(err){
+      alert('Gagal fetch: ' + err.message + '\nCatatan: beberapa server punya CORS yang menolak. Jika bermasalah, upload file ke GitHub raw atau hosting statis.');
+      console.error(err);
+    }
+  });
+
+  function parseGeoJSON(geo){
+    // accept FeatureCollection or array of points
+    clearMarkers();
+    storedFeatures = [];
+    if(geo.type === 'FeatureCollection' && Array.isArray(geo.features)){
+      geo.features.forEach(f => {
+        const c = (f.geometry && f.geometry.coordinates) ? f.geometry.coordinates : null;
+        if(c){
+          const props = f.properties || {};
+          const pt = { lat:c[1], lon:c[0], type:(props.type||props.material||'plastic').toLowerCase(), qty:props.qty||props.count||1, when:props.date||props.when||'', note:props.note||'' };
+          addDebrisPoint(pt);
+        }
+      });
+    } else if(Array.isArray(geo)){
+      geo.forEach(o => {
+        if(o.lat && o.lon) addDebrisPoint(o);
+      });
+    } else {
+      alert('Format GeoJSON tidak dikenali');
+    }
+  }
+
+  function parseCSVRows(rows){
+    // try best-effort mapping: look for lat/lon columns
+    clearMarkers();
+    storedFeatures = [];
+    rows.forEach(r=>{
+      const lat = parseFloat(r.lat || r.latitude || r.Lat || r.Latitude || r.latitude_deg);
+      const lon = parseFloat(r.lon || r.longitude || r.Long || r.Longitude || r.longitude_deg);
+      if(!isNaN(lat) && !isNaN(lon)){
+        const pt = {
+          lat, lon,
+          type: (r.type || r.material || 'plastic').toLowerCase(),
+          qty: r.qty || r.count || 1,
+          when: r.date || r.when || r.timestamp || '',
+          note: r.note || r.description || ''
+        };
+        addDebrisPoint(pt);
+      }
+    });
+    if(storedFeatures.length===0) alert('Tidak menemukan kolom lat/lon yang valid di CSV.');
+    else map.fitBounds(debrisLayer.getBounds(), { maxZoom:13 });
+  }
+
+  // filter
+  document.getElementById('btnApply').addEventListener('click', ()=>{
+    const type = document.getElementById('filterType').value;
+    const days = parseInt(document.getElementById('filterDays').value,10);
+    const cutoff = Date.now() - days*24*3600*1000;
+    debrisLayer.clearLayers();
+    storedFeatures.forEach(pt=>{
+      let keep = true;
+      if(type !== 'all' && !pt.type.includes(type)) keep=false;
+      if(pt.when){
+        const d = new Date(pt.when);
+        if(!isNaN(d) && d.getTime() < cutoff) keep = false;
+      }
+      if(keep) addDebrisPoint(pt);
+    });
+  });
+
+  // export GeoJSON
+  document.getElementById('btnExport').addEventListener('click', ()=>{
+    const features = storedFeatures.map(pt => ({
+      type:'Feature',
+      geometry:{ type:'Point', coordinates:[+pt.lon, +pt.lat] },
+      properties:{ type:pt.type, qty:pt.qty, when:pt.when, note:pt.note }
+    }));
+    const fc = { type:'FeatureCollection', features };
+    const blob = new Blob([JSON.stringify(fc, null, 2)], { type:'application/json' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url; a.download = 'debris_batam.geojson'; a.click();
+    URL.revokeObjectURL(url);
+  });
+
+  // ====== Marine forecast helper (Open-Meteo) ======
+  // This example uses Open-Meteo Marine API (no API key) to fetch wave & wind info.
+  // Docs: https://open-meteo.com/en/docs/marine-weather-api
+  window.fetchMarineForecast = async function(lat, lon){
+    try {
+      const ep = `https://marine-api.open-meteo.com/v1/marine?latitude=${lat}&longitude=${lon}&hourly=wave_height,wind_speed&timezone=auto`;
+      const r = await fetch(ep);
+      if(!r.ok) throw new Error('marine fetch failed: ' + r.status);
+      const data = await r.json();
+      // show a summary popup at the coordinate
+      let summary = '<strong>Marine Forecast (hourly sample)</strong><br/>';
+      if(data.hourly && data.hourly.time && data.hourly.time.length){
+        const t0 = data.hourly.time[0];
+        const wh = data.hourly.wave_height && data.hourly.wave_height[0] !== undefined ? data.hourly.wave_height[0] : 'n/a';
+        const ws = data.hourly.wind_speed && data.hourly.wind_speed[0] !== undefined ? data.hourly.wind_speed[0] : 'n/a';
+        summary += `Time: ${t0}<br/>Wave height: ${wh} m<br/>Wind speed: ${ws} m/s<br/>`;
+      } else {
+        summary += 'No hourly data returned.';
+      }
+      L.popup().setLatLng([lat, lon]).setContent(summary).openOn(map);
+    } catch(e){
+      alert('Gagal fetch marine forecast: ' + e.message);
+      console.error(e);
+    }
+  };
+
+  // init with sample
+  (function init(){
+    document.getElementById('btnLoadSample').click();
+  })();
+
+  </script>
 </body>
 </html>
