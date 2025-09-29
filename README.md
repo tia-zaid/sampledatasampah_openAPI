@@ -1,0 +1,2 @@
+# sampledatasampah_openAPI
+sampledatasampahdariopenAPI
