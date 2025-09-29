@@ -3,64 +3,39 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Sistem Monitoring Sampah Pesisir Batam</title>
+    <title>Monitoring Sampah Pesisir Batam</title>
     
-    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
-     integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY="
-     crossorigin=""/>
-     
-    <link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster@1.5.3/dist/MarkerCluster.css" />
-    <link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster@1.5.3/dist/MarkerCluster.Default.css" />
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
 
-    <div id="map"></div>
+    <header>
+        <h1>Dashboard Monitoring Sampah Pesisir Batam</h1>
+    </header>
 
-    <div class="title-container">
-        <h1>Monitoring Sampah Pesisir Batam</h1>
-        <button id="reportBtn">Laporkan Sampah</button>
-    </div>
-
-    <div id="reportModal" class="modal">
-        <div class="modal-content">
-            <span class="close-button">&times;</span>
-            <h2>Laporkan Penemuan Sampah</h2>
-            <p>Klik lokasi di peta untuk menetapkan koordinat, lalu isi detail di bawah ini.</p>
-            <form id="reportForm">
-                <label for="debrisType">Jenis Sampah:</label>
-                <select id="debrisType" name="debrisType" required>
-                    <option value="Botol Plastik">Botol Plastik</option>
-                    <option value="Kantong Plastik">Kantong Plastik</option>
-                    <option value="Styrofoam">Styrofoam</option>
-                    <option value="Jaring Ikan">Jaring Ikan</option>
-                    <option value="Lainnya">Lainnya</option>
-                </select>
-
-                <label for="description">Deskripsi (opsional):</label>
-                <textarea id="description" name="description" rows="3"></textarea>
-
-                <label for="imageUpload">Unggah Foto (opsional):</label>
-                <input type="file" id="imageUpload" name="imageUpload" accept="image/*">
-                
-                <input type="hidden" id="latitude" name="latitude">
-                <input type="hidden" id="longitude" name="longitude">
-
-                <button type="submit">Kirim Laporan</button>
-            </form>
+    <div class="container">
+        <div id="map"></div>
+        <div id="info-panel">
+            <h2>Informasi Real-time</h2>
+            <div id="weather-info">
+                <h3>Kondisi Cuaca Saat Ini</h3>
+                <p><strong>Lokasi:</strong> <span id="location">Memuat...</span></p>
+                <p><strong>Cuaca:</strong> <span id="weather-desc">Memuat...</span></p>
+                <p><strong>Suhu:</strong> <span id="temp">Memuat...</span> °C</p>
+                <p><strong>Kecepatan Angin:</strong> <span id="wind-speed">Memuat...</span> m/s</p>
+                <p class="warning">⚠️ Perhatian: Angin kencang berpotensi membawa lebih banyak sampah ke daratan.</p>
+            </div>
+            <hr>
+            <div id="location-details">
+                <h3>Detail Lokasi</h3>
+                <p><em>Klik penanda di peta untuk melihat detail.</em></p>
+            </div>
         </div>
     </div>
 
-    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
-     integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo="
-     crossorigin=""></script>
-     
-    <script src="https://unpkg.com/leaflet.markercluster@1.5.3/dist/leaflet.markercluster.js"></script>
-
-    <script src="https://unpkg.com/leaflet-velocity@1.1.0/dist/leaflet-velocity.js"></script>
-
-    <script src="main.js"></script>
-
+    <script src="script.js"></script>
 </body>
 </html>
