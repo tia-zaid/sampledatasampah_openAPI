@@ -1,98 +1,119 @@
 document.addEventListener('DOMContentLoaded', () => {
+    // 1. Initialize the Map
+    // Coordinates for Batam, Indonesia
+    const batamCoords = [1.0456, 104.0305];
+    const map = L.map('map').setView(batamCoords, 10); // Center map on Batam, zoom level 10
 
-    // --- Inisialisasi Peta ---
-    const batamCoords = [1.0456, 104.0305]; // Koordinat pusat Batam
-    const map = L.map('map').setView(batamCoords, 11);
-
+    // Add a tile layer from OpenStreetMap (free to use)
     L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
         attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
     }).addTo(map);
 
-    // --- Konfigurasi API dan Data ---
-    const apiKey = 'd67903f57ba37ba4c412f341b3461a3a'; 
-    const batamCityId = '1650357'; // ID Kota Batam untuk OpenWeatherMap
-    const weatherApiUrl = `https://api.openweathermap.org/data/2.5/weather?id=${batamCityId}&appid=${apiKey}&units=metric&lang=id`;
+    // Get references to DOM elements
+    const panelContent = document.getElementById('panel-content');
+    const loader = document.getElementById('loader');
+
+    // 2. Fetch Waste Data
+    // We'll use the NOAA Marine Debris Monitoring and Assessment Project (MDMAP) dataset.
+    // We define a bounding box around the Riau Islands to filter the global data.
+    const boundingBox = {
+        minLat: 0.5,
+        maxLat: 1.5,
+        minLon: 103.5,
+        maxLon: 104.5
+    };
     
-    // --- Data Simulasi Kondisi Sampah (Ini yang akan diganti jika ada data sensor asli) ---
-    const mockWasteData = [
-        {
-            id: 1,
-            lokasi: "Pantai Nongsa",
-            lat: 1.1823,
-            lng: 104.0935,
-            level: "Tinggi", // Bisa "Rendah", "Sedang", "Tinggi"
-            keterangan: "Tumpukan sampah plastik dan organik akibat arus laut dari utara.",
-            timestamp: new Date().toLocaleString('id-ID')
-        },
-        {
-            id: 2,
-            lokasi: "Kawasan Ocarina",
-            lat: 1.1351,
-            lng: 104.0392,
-            level: "Sedang",
-            keterangan: "Sampah didominasi oleh botol minum dan kemasan makanan.",
-            timestamp: new Date().toLocaleString('id-ID')
-        },
-        {
-            id: 3,
-            lokasi: "Pesisir Jembatan Barelang",
-            lat: 0.9845,
-            lng: 104.0101,
-            level: "Rendah",
-            keterangan: "Kondisi relatif bersih, hanya sedikit sampah ringan.",
-            timestamp: new Date().toLocaleString('id-ID')
-        }
-    ];
+    // Construct the API URL. This API returns data in GeoJSON format.
+    const apiUrl = `https://services2.arcgis.com/C8EMgrsFcR2i0Y6r/arcgis/rest/services/MDMAP_Results/FeatureServer/0/query?where=1%3D1&outFields=*&geometry=${boundingBox.minLon},${boundingBox.minLat},${boundingBox.maxLon},${boundingBox.maxLat}&geometryType=esriGeometryEnvelope&inSR=4326&spatialRel=esriSpatialRelIntersects&f=geojson`;
 
-    // --- Fungsi untuk Mengambil Data Cuaca ---
-    async function fetchWeatherData() {
+    const fetchData = async () => {
+        loader.classList.remove('hidden'); // Show loader
         try {
-            const response = await fetch(weatherApiUrl);
+            const response = await fetch(apiUrl);
+            if (!response.ok) {
+                throw new Error(`HTTP error! status: ${response.status}`);
+            }
             const data = await response.json();
-
-            // Update panel informasi cuaca
-            document.getElementById('location').textContent = data.name;
-            document.getElementById('weather-desc').textContent = data.weather[0].description;
-            document.getElementById('temp').textContent = data.main.temp;
-            document.getElementById('wind-speed').textContent = data.wind.speed;
-
+            console.log('Data fetched successfully:', data); // Log data to console for inspection
+            plotDataOnMap(data.features);
         } catch (error) {
-            console.error("Gagal mengambil data cuaca:", error);
-            document.getElementById('weather-info').innerHTML = "<p>Gagal memuat data cuaca.</p>";
+            console.error("Could not fetch waste data:", error);
+            panelContent.innerHTML = `<p style="color: red;">Failed to load data. Please try again later.</p>`;
+        } finally {
+            loader.classList.add('hidden'); // Hide loader
         }
-    }
+    };
 
-    // --- Fungsi untuk Menampilkan Data Sampah di Peta ---
-    function displayWasteData() {
-        mockWasteData.forEach(data => {
-            let markerColor = 'green'; // Default untuk 'Rendah'
-            if (data.level === 'Sedang') markerColor = 'orange';
-            if (data.level === 'Tinggi') markerColor = 'red';
+    // 3. Plot Data on the Map
+    const plotDataOnMap = (features) => {
+        if (!features || features.length === 0) {
+            panelContent.innerHTML = `<p>No waste data found for the Batam region in the selected dataset.</p>`;
+            return;
+        }
 
-            const marker = L.marker([data.lat, data.lng], {
-                icon: L.divIcon({
-                    className: 'leaflet-div-icon',
-                    html: `<span style="background-color: ${markerColor}; width: 20px; height: 20px; display: block; border-radius: 50%; border: 2px solid white; box-shadow: 0 0 5px rgba(0,0,0,0.5);"></span>`
-                })
-            }).addTo(map);
+        const wasteLayer = L.geoJSON(features, {
+            pointToLayer: (feature, latlng) => {
+                // Style the markers
+                return L.circleMarker(latlng, {
+                    radius: 8,
+                    fillColor: "#ff7800",
+                    color: "#000",
+                    weight: 1,
+                    opacity: 1,
+                    fillOpacity: 0.8
+                });
+            },
+            onEachFeature: (feature, layer) => {
+                // Add a click event to each marker
+                layer.on('click', () => {
+                    updatePanel(feature.properties);
+                });
+            }
+        }).addTo(map);
 
-            // Tampilkan info saat marker diklik
-            marker.on('click', () => {
-                const detailsPanel = document.getElementById('location-details');
-                detailsPanel.innerHTML = `
-                    <h3>${data.lokasi}</h3>
-                    <p><strong>Tingkat Volume Sampah:</strong> <span style="color: ${markerColor}; font-weight: bold;">${data.level}</span></p>
-                    <p><strong>Keterangan:</strong> ${data.keterangan}</p>
-                    <p><strong>Update Terakhir:</strong> ${data.timestamp}</p>
-                `;
-            });
+        // Adjust map view to fit all markers
+        if (wasteLayer.getBounds().isValid()) {
+            map.fitBounds(wasteLayer.getBounds());
+        }
+    };
+
+    // 4. Update the Data Panel with Details
+    const updatePanel = (props) => {
+        // Format date for readability
+        const eventDate = new Date(props.Date).toLocaleDateString('en-US', {
+            year: 'numeric',
+            month: 'long',
+            day: 'numeric'
         });
-    }
 
-    // --- Panggil Fungsi Saat Halaman Dimuat ---
-    fetchWeatherData();
-    displayWasteData();
+        panelContent.innerHTML = `
+            <div class="data-item">
+                <strong>Location:</strong>
+                <span>${props.Location || 'N/A'}</span>
+            </div>
+            <div class="data-item">
+                <strong>Date Recorded:</strong>
+                <span>${eventDate || 'N/A'}</span>
+            </div>
+            <div class="data-item">
+                <strong>Total Items Collected:</strong>
+                <span>${props.Total_Items || 'N/A'}</span>
+            </div>
+            <div class="data-item">
+                <strong>Material Type (Most Common):</strong>
+                <span>${props.Material || 'N/A'}</span>
+            </div>
+            <div class="data-item">
+                <strong>Waste Category:</strong>
+                <span>${props.Category || 'N/A'}</span>
+            </div>
+            <div class="data-item">
+                <strong>Source Organization:</strong>
+                <span>${props.Organization || 'N/A'}</span>
+            </div>
+        `;
+    };
 
-    // Refresh data cuaca setiap 10 menit
-    setInterval(fetchWeatherData, 600000); 
+    // Initial call to fetch data when the script loads
+    fetchData();
 });
