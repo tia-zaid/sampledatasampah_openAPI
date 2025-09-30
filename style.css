@@ -1,58 +1,102 @@
+:root {
+    --primary-color: #005f73;
+    --secondary-color: #0a9396;
+    --background-color: #e9d8a6;
+    --text-color: #333;
+    --card-bg: #ffffff;
+    --shadow: 0 4px 8px rgba(0,0,0,0.1);
+}
+
 body {
     font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
     margin: 0;
-    background-color: #f4f4f9;
-    color: #333;
+    background-color: var(--background-color);
+    color: var(--text-color);
+    line-height: 1.6;
 }
 
 header {
-    background-color: #005f73;
+    background-color: var(--primary-color);
     color: white;
+    padding: 1rem 2rem;
     text-align: center;
-    padding: 1rem;
-    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    box-shadow: var(--shadow);
 }
 
-.container {
+header h1 {
+    margin: 0;
+    font-size: 2rem;
+}
+
+main {
     display: flex;
     flex-wrap: wrap;
-    padding: 10px;
+    padding: 20px;
+    gap: 20px;
+}
+
+#map-container {
+    flex: 3;
+    min-width: 300px;
 }
 
 #map {
-    height: 80vh;
-    flex: 3;
-    min-width: 60%;
+    height: 600px;
+    width: 100%;
     border-radius: 8px;
-    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    box-shadow: var(--shadow);
+    z-index: 1; /* Ensures map is clickable */
 }
 
-#info-panel {
+#data-panel {
     flex: 1;
     min-width: 300px;
-    margin-left: 10px;
+    background-color: var(--card-bg);
     padding: 20px;
-    background-color: white;
     border-radius: 8px;
-    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    box-shadow: var(--shadow);
+    height: 600px;
+    overflow-y: auto;
 }
 
-#info-panel h2, #info-panel h3 {
-    color: #005f73;
-    border-bottom: 2px solid #e0e0e0;
-    padding-bottom: 5px;
+#data-panel h2 {
+    margin-top: 0;
+    color: var(--primary-color);
+    border-bottom: 2px solid var(--secondary-color);
+    padding-bottom: 10px;
 }
 
-.warning {
-    background-color: #fff3cd;
-    border-left: 5px solid #ffc107;
-    padding: 10px;
-    margin-top: 15px;
+.data-item {
+    margin-bottom: 15px;
+}
+
+.data-item strong {
+    color: var(--secondary-color);
+    display: block;
+}
+
+.hidden {
+    display: none;
+}
+
+#loader {
+    text-align: center;
+    padding: 20px;
+    font-size: 1.2em;
+    color: var(--primary-color);
+}
+
+footer {
+    text-align: center;
+    padding: 1rem;
+    background-color: #333;
+    color: #f4f4f4;
     font-size: 0.9em;
 }
 
-/* Custom icon styles for Leaflet */
-.leaflet-div-icon {
-    background: transparent;
-    border: none;
+/* Responsive Design */
+@media (max-width: 768px) {
+    main {
+        flex-direction: column;
+    }
 }
