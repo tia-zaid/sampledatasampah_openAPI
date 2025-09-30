@@ -3,39 +3,38 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Monitoring Sampah Pesisir Batam</title>
-    
-    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
-    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-
+    <title>Batam Coastal Waste Monitor</title>
     <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+     integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY="
+     crossorigin=""/>
 </head>
 <body>
-
     <header>
-        <h1>Dashboard Monitoring Sampah Pesisir Batam</h1>
+        <h1>Batam Coastal Waste Monitor 🌊</h1>
+        <p>Real-time data on marine debris in the coastal zones of Batam and surrounding areas.</p>
     </header>
 
-    <div class="container">
-        <div id="map"></div>
-        <div id="info-panel">
-            <h2>Informasi Real-time</h2>
-            <div id="weather-info">
-                <h3>Kondisi Cuaca Saat Ini</h3>
-                <p><strong>Lokasi:</strong> <span id="location">Memuat...</span></p>
-                <p><strong>Cuaca:</strong> <span id="weather-desc">Memuat...</span></p>
-                <p><strong>Suhu:</strong> <span id="temp">Memuat...</span> °C</p>
-                <p><strong>Kecepatan Angin:</strong> <span id="wind-speed">Memuat...</span> m/s</p>
-                <p class="warning">⚠️ Perhatian: Angin kencang berpotensi membawa lebih banyak sampah ke daratan.</p>
-            </div>
-            <hr>
-            <div id="location-details">
-                <h3>Detail Lokasi</h3>
-                <p><em>Klik penanda di peta untuk melihat detail.</em></p>
-            </div>
+    <main>
+        <div id="map-container">
+            <div id="map"></div>
         </div>
-    </div>
+        <div id="data-panel">
+            <h2>Waste Data Details</h2>
+            <div id="panel-content">
+                <p>Click on a marker on the map to view detailed information about the recorded waste.</p>
+            </div>
+            <div id="loader" class="hidden">Loading data...</div>
+        </div>
+    </main>
 
+    <footer>
+        <p>Data sourced from the NOAA Marine Debris Program API. This is a prototype system.</p>
+    </footer>
+
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
+     integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo="
+     crossorigin=""></script>
     <script src="script.js"></script>
 </body>
 </html>
