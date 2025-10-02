@@ -11,7 +11,7 @@
     <div class="container">
         <header>
             <h1>Content Calendar Generator</h1>
-            <p>Generate jadwal konten bulanan dan tahunan secara otomatis.</p>
+            <p>Generate jadwal konten bulanan dan tahunan secara otomatis. Klik pada tanggal untuk menambah kegiatan custom.</p>
         </header>
         
         <div class="controls">
@@ -34,6 +34,27 @@
              </div>
     </div>
     
+    <div id="event-modal" class="modal">
+        <div class="modal-content">
+            <span class="close-btn">&times;</span>
+            <h3 id="modal-title">Tambah Kegiatan</h3>
+            <input type="hidden" id="event-date">
+            
+            <label for="event-text">Nama Kegiatan:</label>
+            <input type="text" id="event-text" placeholder="Contoh: Kunjungan dari PT. ABC">
+            
+            <label for="event-type">Jenis Kegiatan:</label>
+            <select id="event-type">
+                <option value="kunjungan">Kunjungan</option>
+                <option value="penting">Meeting Penting</option>
+                <option value="acara">Acara Khusus</option>
+                <option value="personal">Personal</option>
+            </select>
+            
+            <button id="save-event-btn">Simpan Kegiatan</button>
+            <button id="delete-event-btn" class="delete-btn">Hapus Kegiatan Terakhir</button>
+        </div>
+    </div>
     <script src="script.js"></script>
 </body>
 </html>
