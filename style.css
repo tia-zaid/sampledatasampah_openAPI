@@ -1,102 +1,162 @@
 :root {
-    --primary-color: #005f73;
-    --secondary-color: #0a9396;
-    --background-color: #e9d8a6;
+    --primary-color: #007bff;
+    --secondary-color: #f8f9fa;
     --text-color: #333;
-    --card-bg: #ffffff;
-    --shadow: 0 4px 8px rgba(0,0,0,0.1);
+    --border-color: #dee2e6;
+    --header-bg: #343a40;
+    --task-shooting: #dc3545;
+    --task-editing: #28a745;
+    --task-meeting: #ffc107;
+    --task-postprod: #17a2b8;
+    --task-special: #6f42c1;
 }
 
 body {
-    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-    margin: 0;
-    background-color: var(--background-color);
+    font-family: 'Poppins', sans-serif;
+    background-color: #f4f7f9;
     color: var(--text-color);
-    line-height: 1.6;
+    margin: 0;
+    padding: 20px;
+}
+
+.container {
+    max-width: 1400px;
+    margin: auto;
+    background: #fff;
+    padding: 30px;
+    border-radius: 12px;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.08);
 }
 
 header {
-    background-color: var(--primary-color);
-    color: white;
-    padding: 1rem 2rem;
     text-align: center;
-    box-shadow: var(--shadow);
+    margin-bottom: 30px;
+    border-bottom: 1px solid var(--border-color);
+    padding-bottom: 20px;
 }
 
 header h1 {
+    color: var(--header-bg);
     margin: 0;
-    font-size: 2rem;
 }
 
-main {
+.controls {
     display: flex;
-    flex-wrap: wrap;
-    padding: 20px;
+    justify-content: center;
+    align-items: center;
     gap: 20px;
+    margin-bottom: 30px;
+    flex-wrap: wrap;
 }
 
-#map-container {
-    flex: 3;
-    min-width: 300px;
+.control-group {
+    display: flex;
+    align-items: center;
+    gap: 8px;
 }
 
-#map {
-    height: 600px;
-    width: 100%;
+select, button {
+    padding: 10px 15px;
+    border-radius: 6px;
+    border: 1px solid var(--border-color);
+    font-size: 16px;
+    font-family: 'Poppins', sans-serif;
+    cursor: pointer;
+}
+
+button {
+    background-color: var(--primary-color);
+    color: white;
+    border: none;
+    transition: background-color 0.3s;
+}
+
+button:hover {
+    background-color: #0056b3;
+}
+
+#generate-year-btn {
+    background-color: #28a745;
+}
+#generate-year-btn:hover {
+    background-color: #218838;
+}
+
+.calendar {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    gap: 5px;
+    border: 1px solid var(--border-color);
     border-radius: 8px;
-    box-shadow: var(--shadow);
-    z-index: 1; /* Ensures map is clickable */
+    overflow: hidden;
 }
 
-#data-panel {
-    flex: 1;
-    min-width: 300px;
-    background-color: var(--card-bg);
-    padding: 20px;
-    border-radius: 8px;
-    box-shadow: var(--shadow);
-    height: 600px;
-    overflow-y: auto;
-}
-
-#data-panel h2 {
-    margin-top: 0;
-    color: var(--primary-color);
-    border-bottom: 2px solid var(--secondary-color);
-    padding-bottom: 10px;
-}
-
-.data-item {
-    margin-bottom: 15px;
-}
-
-.data-item strong {
-    color: var(--secondary-color);
-    display: block;
-}
-
-.hidden {
-    display: none;
-}
-
-#loader {
+.calendar-header {
     text-align: center;
-    padding: 20px;
-    font-size: 1.2em;
-    color: var(--primary-color);
+    padding: 12px;
+    background-color: var(--header-bg);
+    color: white;
+    font-weight: 600;
 }
 
-footer {
+.day {
+    min-height: 150px;
+    padding: 8px;
+    background-color: #fff;
+    border-top: 1px solid var(--border-color);
+    border-left: 1px solid var(--border-color);
+    transition: background-color 0.3s;
+}
+
+.day:hover {
+    background-color: #f1f1f1;
+}
+
+.day.weekend {
+    background-color: var(--secondary-color);
+}
+
+.day-number {
+    font-weight: 600;
+    font-size: 14px;
+    text-align: right;
+    margin-bottom: 5px;
+}
+
+.tasks {
+    font-size: 12px;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.task {
+    padding: 4px 6px;
+    border-radius: 4px;
+    color: white;
+    display: flex;
+    align-items: center;
+}
+
+.task-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    margin-right: 6px;
+    flex-shrink: 0;
+}
+
+.task-shooting { background-color: var(--task-shooting); }
+.task-editing { background-color: var(--task-editing); }
+.task-meeting { background-color: var(--task-meeting); color: #333; }
+.task-postprod { background-color: var(--task-postprod); }
+.task-special { background-color: var(--task-special); }
+
+.yearly-view {
+    margin-top: 30px;
+}
+
+.yearly-view h2 {
     text-align: center;
-    padding: 1rem;
-    background-color: #333;
-    color: #f4f4f4;
-    font-size: 0.9em;
-}
-
-/* Responsive Design */
-@media (max-width: 768px) {
-    main {
-        flex-direction: column;
-    }
+    margin-bottom: 20px;
 }
